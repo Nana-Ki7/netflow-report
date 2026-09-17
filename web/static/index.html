@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>校园网流量 · 网页版</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f6f7f9;color:#1a1a1a}
+  .wrap{max-width:960px;margin:0 auto;padding:24px}
+  h1{font-size:20px;margin:8px 0 4px}
+  .sub{color:#888;font-size:13px;margin-bottom:20px}
+  .card{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:20px;margin-bottom:20px}
+  h3{margin:0 0 6px;font-size:15px}
+  label{display:block;font-size:13px;color:#555;margin:12px 0 6px}
+  input{width:100%;padding:10px 12px;border:1px solid #d7dbe0;border-radius:8px;font-size:14px}
+  button{margin-top:18px;width:100%;padding:11px;border:0;border-radius:8px;background:#3b6df6;color:#fff;font-size:15px;cursor:pointer}
+  button:disabled{opacity:.6;cursor:default}
+  .err{margin-top:14px;color:#c62828;font-size:13px;white-space:pre-wrap}
+  .chart{width:100%;height:420px;margin-top:8px}
+  .hint{font-size:12px;color:#999;margin-top:8px;line-height:1.6}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>校园网流量</h1>
+  <div class="sub">网页登录，直接在浏览器里看图表</div>
+
+  <div class="card" id="loginCard">
+    <label>学号</label>
+    <input id="stu" autocomplete="username" placeholder="你的学号">
+    <label>个人门户密码</label>
+    <input id="pwd" type="password" autocomplete="current-password" placeholder="只在本次请求里用，不会被保存">
+    <label>分布图取最近几个月（0 = 不取，取的话逐月请求会慢一点）</label>
+    <input id="dist" type="number" min="0" max="12" value="3">
+    <button id="go">登录并查看</button>
+    <div class="err" id="err" hidden></div>
+    <div class="hint">
+      需要身处校园网或学校 VPN 内。<br>
+      凭据只用于本次请求的服务端登录，用完即弃：不落盘、不记日志、不进响应。
+    </div>
+  </div>
+
+  <div id="result" hidden>
+    <div class="card">
+      <h3>按月流量趋势</h3>
+      <div class="chart" id="c1"></div>
+    </div>
+    <div class="card" id="distCard">
+      <h3>流量都花在哪了</h3>
+      <div class="chart" id="c2"></div>
+      <div class="chart" id="c3" style="height:540px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let charts = [];
+
+function clearCharts(){ charts.forEach(c => c.dispose()); charts = []; }
+
+// 用 SVG 渲染：图是矢量的，放大不糊，也能直接另存成 .svg
+function newChart(el){
+  const c = echarts.init(el, null, { renderer: 'svg' });
+  charts.push(c);
+  return c;
+}
+
+$('go').addEventListener('click', async () => {
+  const stu_id = $('stu').value.trim();
+  const password = $('pwd').value;
+  const dist_months = parseInt($('dist').value || '0', 10) || 0;
+  const err = $('err');
+  err.hidden = true;
+
+  if (!stu_id || !password) {
+    err.textContent = '学号和密码都要填。';
+    err.hidden = false;
+    return;
+  }
+
+  const btn = $('go');
+  btn.disabled = true;
+  btn.textContent = '登录取数中…（分布图要逐月请求，稍等）';
+  try {
+    const resp = await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stu_id, password, dist_months })
+    });
+    const j = await resp.json();
+    if (!j.ok) throw new Error(j.error || ('HTTP ' + resp.status));
+    $('pwd').value = '';        // 用完立刻清掉，不留在页面里
+    render(j.data);
+  } catch (e) {
+    err.textContent = '出错了：' + e.message;
+    err.hidden = false;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '登录并查看';
+  }
+});
+
+function render(data){
+  $('result').hidden = false;
+  clearCharts();
+
+  const m = data.monthly || [];
+  newChart($('c1')).setOption({
+    title: { text: '按月流量趋势', subtext: '柱：总流量(GB)　线：上传/下载(GB)、应缴费用(元)', left: 'center' },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { top: 62 },
+    grid: { left: 70, right: 70, top: 110, bottom: 60 },
+    xAxis: { type: 'category', data: m.map(x => x.month), axisLabel: { rotate: 45 } },
+    yAxis: [ { type: 'value', name: '流量 (GB)' }, { type: 'value', name: '费用 (元)', splitLine: { show: false } } ],
+    series: [
+      { name: '总流量', type: 'bar', data: m.map(x => x.total_gb), itemStyle: { borderRadius: [4,4,0,0], color: '#5b8ff9' } },
+      { name: '上传', type: 'line', smooth: true, symbolSize: 6, data: m.map(x => x.upload_gb), itemStyle: { color: '#61ddaa' } },
+      { name: '下载', type: 'line', smooth: true, symbolSize: 6, data: m.map(x => x.download_gb), itemStyle: { color: '#f6bd16' } },
+      { name: '应缴费用', type: 'line', yAxisIndex: 1, smooth: true, symbolSize: 6, data: m.map(x => x.should_pay_yuan), itemStyle: { color: '#e8684a' } }
+    ]
+  });
+
+  const d = data.distribution || [];
+  if (!d.length) { $('distCard').hidden = true; return; }
+  $('distCard').hidden = false;
+
+  // 只看最近一个月
+  const months = [...new Set(d.map(x => x.month))].sort();
+  const last = months[months.length - 1];
+  const cur = d.filter(x => x.month === last);
+
+  // 一级分类合并（app 形如 /网络游戏/steam平台，取第一段）
+  const agg = {};
+  cur.forEach(x => {
+    const top = (x.app || '').split('/').filter(Boolean)[0] || '其它';
+    agg[top] = (agg[top] || 0) + x.total_gb;
+  });
+  const pie = Object.entries(agg)
+    .map(([name, value]) => ({ name, value: +value.toFixed(2) }))
+    .sort((a, b) => b.value - a.value);
+
+  newChart($('c2')).setOption({
+    title: { text: '应用分布 · ' + last, subtext: '按一级分类合并', left: 'center' },
+    tooltip: { trigger: 'item', formatter: '{b}: {c} GB ({d}%)' },
+    series: [{ type: 'pie', radius: ['38%','66%'], center: ['50%','58%'], data: pie, label: { formatter: '{b}\n{c} GB' } }]
+  });
+
+  const top = cur.slice().sort((a, b) => b.total_gb - a.total_gb).slice(0, 15).reverse();
+  newChart($('c3')).setOption({
+    title: { text: '应用 Top15 · ' + last, left: 'center' },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
+               formatter: p => p[0].name + '<br/>' + p[0].value + ' GB' },
+    grid: { left: 160, right: 50, top: 50, bottom: 30 },
+    xAxis: { type: 'value', name: 'GB' },
+    yAxis: { type: 'category', data: top.map(x => x.app) },
+    series: [{ type: 'bar', data: top.map(x => x.total_gb), itemStyle: { color: '#5b8ff9' } }]
+  });
+}
+
+window.addEventListener('resize', () => charts.forEach(c => c.resize()));
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[package]
+name = "netflow-web"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# 校园网流量的「网页版」：网页登录 → 服务端取数 → 页面画图。
+# 取数逻辑复用 export-rust 里那套（同一个 hnu_query 库），只是把 CSV 换成 JSON。
+[dependencies]
+hnu_query = { git = "https://github.com/qnxg/hnu_query" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+axum = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"

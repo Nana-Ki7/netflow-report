@@ -1,0 +1,18 @@
+# 编译产物
+target/
+*.exe
+netflow-chart
+netflow-chart.exe
+build/
+
+# 生成物
+chart.html
+my-chart.html
+
+# 个人数据：你自己的流量 CSV 不要提交上去
+*.csv
+!data/sample_monthly.csv
+
+# 凭据：永远不要进版本库
+.env
+.env.local

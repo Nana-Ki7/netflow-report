@@ -1,0 +1,15 @@
+[package]
+name = "netflow-export"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# 这个程序只做一件事：登录 → 取校园网流量数据 → 按「月」聚合成 CSV。
+# 数据拿全之后交给 C++ 去画图，两边通过 CSV 这个中间层解耦。
+[dependencies]
+# hnu_query 目前没有发到 crates.io 的稳定 CLI，直接从 git 引，跟着仓库走最新版
+hnu_query = { git = "https://github.com/qnxg/hnu_query" }
+# 也可以换成你本地 clone 的路径，编译更快，也方便自己改：
+#   hnu_query = { path = "../../hnu_query" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+chrono = "0.4"
