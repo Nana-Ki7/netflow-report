@@ -40,11 +40,16 @@ const KB_PER_GB: f64 = 1024.0 * 1024.0;
 /// 前端页面直接编译进二进制，省得再配静态目录服务
 const INDEX_HTML: &str = include_str!("../static/index.html");
 
+/// 免登录的示例数据：由 cpp/data 那两份样例 CSV 生成，纯演示用。
+/// 有了它，没进校园网、手上又没凭据的人也能先把页面和图表看一遍。
+const DEMO_JSON: &str = include_str!("../static/demo.json");
+
 #[tokio::main]
 async fn main() {
     let app = Router::new()
         .route("/", get(index))
-        .route("/api/data", post(api_data));
+        .route("/api/data", post(api_data))
+        .route("/api/demo", get(api_demo));
 
     let addr = "127.0.0.1:8080";
     let listener = tokio::net::TcpListener::bind(addr)
@@ -82,6 +87,16 @@ async fn api_data(Json(req): Json<LoginReq>) -> Json<Value> {
     match fetch(&req).await {
         Ok(data) => Json(json!({"ok": true, "data": data})),
         Err(e) => Json(json!({"ok": false, "error": e})),
+    }
+}
+
+/// 示例数据：不碰任何凭据，直接把编好的演示数据吐给页面。
+///
+/// 结构与 [`api_data`] 的返回完全一致，前端拿到就能直接画。
+async fn api_demo() -> Json<Value> {
+    match serde_json::from_str::<Value>(DEMO_JSON) {
+        Ok(data) => Json(json!({ "ok": true, "demo": true, "data": data })),
+        Err(e) => Json(json!({ "ok": false, "error": format!("示例数据解析失败：{e}") })),
     }
 }
 
