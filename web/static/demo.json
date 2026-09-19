@@ -1,0 +1,222 @@
+{
+ "monthly": [
+  {
+   "month": "2025-10",
+   "total_gb": 62.4,
+   "upload_gb": 18.2,
+   "download_gb": 44.2,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2025-11",
+   "total_gb": 88.7,
+   "upload_gb": 25.4,
+   "download_gb": 63.3,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2025-12",
+   "total_gb": 121.5,
+   "upload_gb": 34.9,
+   "download_gb": 86.6,
+   "over_usage_gb": 21.5,
+   "should_pay_yuan": 10.75
+  },
+  {
+   "month": "2026-01",
+   "total_gb": 45.3,
+   "upload_gb": 12.1,
+   "download_gb": 33.2,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-02",
+   "total_gb": 33.8,
+   "upload_gb": 9.6,
+   "download_gb": 24.2,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-03",
+   "total_gb": 96.2,
+   "upload_gb": 28.3,
+   "download_gb": 67.9,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-04",
+   "total_gb": 74.5,
+   "upload_gb": 21.7,
+   "download_gb": 52.8,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-05",
+   "total_gb": 68.9,
+   "upload_gb": 19.4,
+   "download_gb": 49.5,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-06",
+   "total_gb": 105.3,
+   "upload_gb": 31.2,
+   "download_gb": 74.1,
+   "over_usage_gb": 5.3,
+   "should_pay_yuan": 2.65
+  },
+  {
+   "month": "2026-07",
+   "total_gb": 58.1,
+   "upload_gb": 16.8,
+   "download_gb": 41.3,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-08",
+   "total_gb": 41.6,
+   "upload_gb": 12.4,
+   "download_gb": 29.2,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  },
+  {
+   "month": "2026-09",
+   "total_gb": 87.4,
+   "upload_gb": 26.1,
+   "download_gb": 61.3,
+   "over_usage_gb": 0.0,
+   "should_pay_yuan": 0.0
+  }
+ ],
+ "distribution": [
+  {
+   "month": "2026-09",
+   "app": "/网络游戏/steam平台",
+   "total_gb": 18.42,
+   "download_gb": 18.1,
+   "upload_gb": 0.32,
+   "percentage": 0.2198
+  },
+  {
+   "month": "2026-09",
+   "app": "/视频/哔哩哔哩",
+   "total_gb": 15.88,
+   "download_gb": 15.6,
+   "upload_gb": 0.28,
+   "percentage": 0.1895
+  },
+  {
+   "month": "2026-09",
+   "app": "/网盘/百度网盘",
+   "total_gb": 12.3,
+   "download_gb": 12.05,
+   "upload_gb": 0.25,
+   "percentage": 0.1468
+  },
+  {
+   "month": "2026-09",
+   "app": "/视频/抖音",
+   "total_gb": 9.64,
+   "download_gb": 9.3,
+   "upload_gb": 0.34,
+   "percentage": 0.115
+  },
+  {
+   "month": "2026-09",
+   "app": "/系统更新/Windows更新",
+   "total_gb": 7.21,
+   "download_gb": 7.15,
+   "upload_gb": 0.06,
+   "percentage": 0.086
+  },
+  {
+   "month": "2026-09",
+   "app": "/音乐/网易云音乐",
+   "total_gb": 4.35,
+   "download_gb": 4.1,
+   "upload_gb": 0.25,
+   "percentage": 0.0519
+  },
+  {
+   "month": "2026-09",
+   "app": "/即时消息/QQ/音视频",
+   "total_gb": 3.92,
+   "download_gb": 1.86,
+   "upload_gb": 2.06,
+   "percentage": 0.0468
+  },
+  {
+   "month": "2026-09",
+   "app": "/学习/中国大学MOOC",
+   "total_gb": 3.1,
+   "download_gb": 2.6,
+   "upload_gb": 0.5,
+   "percentage": 0.037
+  },
+  {
+   "month": "2026-09",
+   "app": "/网页浏览/通用网页",
+   "total_gb": 2.77,
+   "download_gb": 2.55,
+   "upload_gb": 0.22,
+   "percentage": 0.0331
+  },
+  {
+   "month": "2026-09",
+   "app": "/基础协议/SSL",
+   "total_gb": 2.05,
+   "download_gb": 1.2,
+   "upload_gb": 0.85,
+   "percentage": 0.0245
+  },
+  {
+   "month": "2026-09",
+   "app": "/远程控制/SSH",
+   "total_gb": 1.48,
+   "download_gb": 0.62,
+   "upload_gb": 0.86,
+   "percentage": 0.0177
+  },
+  {
+   "month": "2026-09",
+   "app": "/基础协议/HTTP",
+   "total_gb": 1.12,
+   "download_gb": 0.94,
+   "upload_gb": 0.18,
+   "percentage": 0.0134
+  },
+  {
+   "month": "2026-09",
+   "app": "/其他/未知",
+   "total_gb": 0.86,
+   "download_gb": 0.55,
+   "upload_gb": 0.31,
+   "percentage": 0.0103
+  },
+  {
+   "month": "2026-09",
+   "app": "/网络下载/FTP",
+   "total_gb": 0.42,
+   "download_gb": 0.4,
+   "upload_gb": 0.02,
+   "percentage": 0.005
+  },
+  {
+   "month": "2026-09",
+   "app": "/邮箱/邮件协议",
+   "total_gb": 0.28,
+   "download_gb": 0.24,
+   "upload_gb": 0.04,
+   "percentage": 0.0033
+  }
+ ]
+}
