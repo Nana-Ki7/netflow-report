@@ -33,6 +33,12 @@ netflow-report/
 │   └── data/
 │       ├── sample_monthly.csv        # 编的示例数据：按月汇总
 │       └── sample_distribution.csv   # 编的示例数据：按应用分布
+├── web/                  # 第三层：网页版（浏览器登录 + 出图）
+│   ├── Cargo.toml
+│   ├── src/main.rs
+│   └── static/
+│       ├── index.html          # 登录框 + ECharts 图表
+│       └── demo.json           # 免登录示例模式用的数据
 ├── glm/                  # 让智谱 GLM 当私教的小脚本
 │   └── ask_glm.py
 └── TUTORIAL.md           # 逐步讲解 + 练习题，从这开始看
@@ -105,14 +111,17 @@ cargo run --release
 - 前端就一个 HTML（`web/static/index.html`），图用 ECharts 画，渲染器选的 **SVG**——矢量、放大不糊。
 - 后端 `web/src/main.rs` 复用同一个 `hnu_query`：`POST /api/data` 收学号密码 → 登录 → 取账单（可选按应用分布）→ 回 JSON。
 - **凭据只在这一次请求的内存里过一遍**，用完即弃：不落盘、不写日志、不进响应。
+- 页面上还有个「**先看示例数据**」按钮，走 `GET /api/demo`，吐的是 `cpp/data` 那两份样例 CSV 生成的演示数据。
+  没进校园网、手上没凭据也能先把界面和图表看一遍——它不碰登录，也不读任何真实用量。
 - 和命令行版一样，登录必须身处**校园网或学校 VPN** 内。
 
-接口只有两个：
+接口就三个：
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | GET | `/` | 页面本体 |
 | POST | `/api/data` | 入参 `{stu_id, password, dist_months}` → 出参 `{ok, data:{monthly, distribution}}` |
+| GET | `/api/demo` | 免登录的示例数据，结构与 `/api/data` 的 `data` 一致 |
 
 `dist_months` 是「按应用分布」取最近几个月，`0` 表示不取——这部分要逐月发请求，会慢一点。
 
