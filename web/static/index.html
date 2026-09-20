@@ -22,6 +22,9 @@
   .err{margin-top:14px;color:#c62828;font-size:13px;white-space:pre-wrap}
   .chart{width:100%;height:420px;margin-top:8px}
   .hint{font-size:12px;color:#999;margin-top:8px;line-height:1.6}
+  .dlbar{margin-top:8px;text-align:right}
+  button.mini{margin:0 0 0 6px;padding:4px 10px;width:auto;font-size:12px;background:#eef2ff;color:#3b6df6;border:1px solid #c9d6ff;border-radius:6px;cursor:pointer}
+  button.mini:hover{background:#dfe7ff}
   [hidden]{display:none!important}
 </style>
 </head>
@@ -51,11 +54,23 @@
     <div class="card">
       <h3>按月流量趋势</h3>
       <div class="chart" id="c1"></div>
+      <div class="dlbar">
+        <button class="mini" data-chart="c1">存 SVG</button>
+        <button class="mini" data-chart="c1" data-type="png">存 PNG</button>
+      </div>
     </div>
     <div class="card" id="distCard">
       <h3>流量都花在哪了</h3>
       <div class="chart" id="c2"></div>
+      <div class="dlbar">
+        <button class="mini" data-chart="c2">存 SVG</button>
+        <button class="mini" data-chart="c2" data-type="png">存 PNG</button>
+      </div>
       <div class="chart" id="c3" style="height:540px"></div>
+      <div class="dlbar">
+        <button class="mini" data-chart="c3">存 SVG</button>
+        <button class="mini" data-chart="c3" data-type="png">存 PNG</button>
+      </div>
     </div>
   </div>
 </div>
@@ -182,6 +197,29 @@ function render(data, isDemo){
     series: [{ type: 'bar', data: top.map(x => x.total_gb), itemStyle: { color: '#5b8ff9' } }]
   });
 }
+
+// 把某张图存成文件。默认 SVG——矢量图，放大不糊，也能直接塞进推文/文档。
+function downloadChart(btn){
+  const el = $(btn.dataset.chart);
+  const c = charts.find(x => x.getDom() === el);
+  if (!c) return;
+  const type = btn.dataset.type || 'svg';
+  const name = (((c.getOption().title || [])[0] || {}).text || 'chart').replace(/\s+/g, '_');
+  try {
+    const url = c.getDataURL({ type, pixelRatio: 2, backgroundColor: '#fff' });
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name + '.' + type;
+    a.click();
+  } catch (err) {
+    alert('导出失败：' + err.message);
+  }
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button.mini');
+  if (b) downloadChart(b);
+});
 
 window.addEventListener('resize', () => charts.forEach(c => c.resize()));
 </script>
