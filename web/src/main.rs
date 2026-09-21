@@ -20,7 +20,7 @@
 
 use axum::{
     Json, Router,
-    response::Html,
+    response::{Html, IntoResponse},
     routing::{get, post},
 };
 use chrono::{Datelike, Local};
@@ -39,6 +39,8 @@ const KB_PER_GB: f64 = 1024.0 * 1024.0;
 
 /// 前端页面直接编译进二进制，省得再配静态目录服务
 const INDEX_HTML: &str = include_str!("../static/index.html");
+/// ECharts 直接内嵌，随服务一起发 —— 页面不再依赖任何 CDN（国内访问 jsdelivr 常失败）
+const ECHARTS_JS: &[u8] = include_bytes!("../static/echarts.min.js");
 
 /// 免登录的示例数据：由 cpp/data 那两份样例 CSV 生成，纯演示用。
 /// 有了它，没进校园网、手上又没凭据的人也能先把页面和图表看一遍。
@@ -48,6 +50,7 @@ const DEMO_JSON: &str = include_str!("../static/demo.json");
 async fn main() {
     let app = Router::new()
         .route("/", get(index))
+        .route("/echarts.min.js", get(echarts_js))
         .route("/api/data", post(api_data))
         .route("/api/demo", get(api_demo));
 
@@ -64,6 +67,17 @@ async fn main() {
 /// 首页：把内嵌的 HTML 原样返回
 async fn index() -> Html<&'static str> {
     Html(INDEX_HTML)
+}
+
+/// 把内嵌的 ECharts 原样发出，替代原来的 CDN
+async fn echarts_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            "application/javascript; charset=utf-8",
+        )],
+        ECHARTS_JS,
+    )
 }
 
 /// 前端提交上来的登录参数
