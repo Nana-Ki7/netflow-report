@@ -218,6 +218,37 @@ let charts = {};
 const PALETTE = ['#6366f1','#8b5cf6','#0ea5e9','#14b8a6','#f59e0b','#f43f5e','#22c55e','#a855f7','#06b6d4','#ec4899'];
 const AXIS = { line: '#e6e8f0', label: '#8a93a6', split: '#f0f2f8' };
 
+// 「关键词 → 图标」映射。流量接口只给中文分类路径（如 /网络游戏/steam平台），
+// 没有域名、也没有现成图标源，所以本地建一张表；匹配不到就用 📦 兑底。
+// 全部离线，不引任何外网图片。
+const ICON_RULES = [
+  [/游戏|steam|epic|origin|暴雪|riot|米哈游|原神|网易|腾牛|游联|任天堂|switch|psn|xboc/, '🎮'],
+  [/哔哩|b站|bilibili|youtube|优黑|爱奇艺|腾牛视频|视频|影视|抖音|快手|直播视频|netflix/, '📺'],
+  [/音乐|网易云|qq音乐|spotify|音频|播客|喜马拉雅/, '🎵'],
+  [/微信|wechat|qq|微博|telegram|discord|知乎|贴吧|豆瓣|社交|论坛/, '💬'],
+  [/下载|p2p|bt|迅雷|torrent|商店|应用|软件更新|更新/, '⬇️'],
+  [/浏览|网页|浏览器|http|百度|google/, '🌐'],
+  [/直播|斗鱼|虎牙|twitch/, '📡'],
+  [/网盘|云盘|百度云|onedrive|drive|icloud|存储/, '☁️'],
+  [/购物|淘宝|京东|拼多多|amazon|电商/, '🛒'],
+  [/学习|教育|课程|mooc|知网|学术|文档|论文/, '📚'],
+  [/图片|照片|相册|图像|壁纸/, '🖼️'],
+  [/邮件|mail|smtp|imap|pop|邮箱/, '✉️'],
+  [/ssh|远程|rdp|vnc|telnet|控制/, '🖥️'],
+  [/ssl|tls|加密|证书|vpn/, '🔒'],
+  [/dns|域名/, '🧭'],
+  [/ftp|文件传输/, '📁'],
+  [/系统|window|apple|微软|android|厂商|苹果/, '⚙️'],
+  [/语音|通话|会议|zoom|腾讯会议/, '🎙️'],
+  [/ai|gpt|模型|人工智能|大模型/, '🤖'],
+];
+const DEFAULT_ICON = '📦';
+function iconFor(name){
+  const s = String(name || '').toLowerCase();
+  for (const [re, ic] of ICON_RULES) { if (re.test(s)) return ic; }
+  return DEFAULT_ICON;
+}
+
 // 统一图表基础样式，三张图共用
 function baseOption(){
   return {
@@ -386,8 +417,8 @@ function renderDist(d){
   const totalGB = pie.reduce((s,x) => s + x.value, 0);
   mk('c2').setOption(Object.assign(baseOption(), {
     color: PALETTE,
-    tooltip: Object.assign(baseOption().tooltip, { trigger:'item', formatter: p => `${p.name}<br/><b>${p.value} GB</b> · ${p.percent}%` }),
-    legend: { bottom: 0, icon:'circle', itemWidth:9, itemHeight:9, textStyle:{ color:'#64748b', fontSize:12 } },
+    tooltip: Object.assign(baseOption().tooltip, { trigger:'item', formatter: p => `${iconFor(p.name)} ${p.name}<br/><b>${p.value} GB</b> · ${p.percent}%` }),
+    legend: { bottom: 0, icon:'circle', itemWidth:9, itemHeight:9, textStyle:{ color:'#64748b', fontSize:12 }, formatter: name => iconFor(name) + ' ' + name },
     series: [{
       type:'pie', radius:['52%','76%'], center:['50%','46%'], avoidLabelOverlap:true,
       itemStyle:{ borderColor:'#fff', borderWidth:3, borderRadius:6 },
@@ -409,10 +440,11 @@ function renderDist(d){
   mk('c3').setOption(Object.assign(baseOption(), {
     grid: { left: 8, right: 60, top: 16, bottom: 8, containLabel: true },
     tooltip: Object.assign(baseOption().tooltip, { trigger:'axis', axisPointer:{ type:'shadow', shadowStyle:{ color:'rgba(99,102,241,.06)' } },
-      formatter: p => `${p[0].name}<br/><b>${p[0].value} GB</b>` }),
+      formatter: p => `${iconFor(p[0].name)} ${p[0].name}<br/><b>${p[0].value} GB</b>` }),
     xAxis: { type:'value', splitLine:{ lineStyle:{ color: AXIS.split, type:'dashed' } }, axisLabel:{ color: AXIS.label }, axisLine:{ show:false }, axisTick:{ show:false } },
     yAxis: { type:'category', data: top.map(x => x.app.replace(/^\//,'').split('/').join(' / ')),
-             axisLine:{ show:false }, axisTick:{ show:false }, axisLabel:{ color:'#475569', fontSize:11.5, width:130, overflow:'truncate' } },
+             axisLine:{ show:false }, axisTick:{ show:false },
+             axisLabel:{ color:'#475569', fontSize:11.5, width:140, overflow:'truncate', formatter: v => iconFor(v) + ' ' + v } },
     series: [{
       type:'bar', data: top.map(x => x.total_gb), barMaxWidth:15,
       itemStyle:{ borderRadius:[0,6,6,0], color: g2 },
