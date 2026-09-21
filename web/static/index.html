@@ -3,225 +3,437 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>校园网流量 · 网页版</title>
+<title>校园网流量</title>
 <script src="/echarts.min.js"></script>
 <style>
+  :root{
+    --bg:#f5f6fa; --card:#fff; --line:#eceef4; --ink:#0f172a; --muted:#64748b; --faint:#94a3b8;
+    --primary:#6366f1; --primary-2:#8b5cf6; --ok:#10b981; --warn:#f59e0b; --danger:#f43f5e;
+    --radius:16px;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 8px 24px -12px rgba(16,24,40,.18);
+    --shadow-sm:0 1px 2px rgba(16,24,40,.05);
+  }
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f6f7f9;color:#1a1a1a}
-  .wrap{max-width:960px;margin:0 auto;padding:24px}
-  h1{font-size:20px;margin:8px 0 4px}
-  .sub{color:#888;font-size:13px;margin-bottom:20px}
-  .card{background:#fff;border:1px solid #e6e8eb;border-radius:12px;padding:20px;margin-bottom:20px}
-  h3{margin:0 0 6px;font-size:15px}
-  label{display:block;font-size:13px;color:#555;margin:12px 0 6px}
-  input{width:100%;padding:10px 12px;border:1px solid #d7dbe0;border-radius:8px;font-size:14px}
-  button{margin-top:18px;width:100%;padding:11px;border:0;border-radius:8px;background:#3b6df6;color:#fff;font-size:15px;cursor:pointer}
-  button:disabled{opacity:.6;cursor:default}
-  button.ghost{margin-top:10px;background:#fff;color:#3b6df6;border:1px solid #c9d6ff}
-  .demo-note{background:#fff8e6;border-color:#f0dda3;color:#8a6d1f;font-size:13px}
-  .err{margin-top:14px;color:#c62828;font-size:13px;white-space:pre-wrap}
-  .chart{width:100%;height:420px;margin-top:8px}
-  .hint{font-size:12px;color:#999;margin-top:8px;line-height:1.6}
-  .dlbar{margin-top:8px;text-align:right}
-  button.mini{margin:0 0 0 6px;padding:4px 10px;width:auto;font-size:12px;background:#eef2ff;color:#3b6df6;border:1px solid #c9d6ff;border-radius:6px;cursor:pointer}
-  button.mini:hover{background:#dfe7ff}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans SC",Inter,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; font-size:14px;
+  }
+  h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+  button{font-family:inherit}
   [hidden]{display:none!important}
+
+  /* ---------- 登录 ---------- */
+  .login{
+    min-height:100vh; display:grid; place-items:center; padding:24px;
+    background:
+      radial-gradient(1100px 520px at 12% -12%, #e0e7ff 0%, transparent 58%),
+      radial-gradient(820px 460px at 104% 8%, #ede9fe 0%, transparent 52%),
+      var(--bg);
+  }
+  .login-card{
+    width:100%; max-width:400px; background:var(--card); border:1px solid var(--line);
+    border-radius:22px; box-shadow:var(--shadow); padding:32px 30px;
+  }
+  .logo{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .logo .dot{
+    width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:#fff;font-size:17px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    box-shadow:0 6px 14px -6px rgba(99,102,241,.8);
+  }
+  .logo b{font-size:16px}
+  .logo span{display:block;color:var(--faint);font-size:12px;font-weight:400;margin-top:1px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:7px;font-weight:500}
+  .field input{
+    width:100%;padding:11px 13px;border:1px solid #e2e5ee;border-radius:11px;font-size:14px;color:var(--ink);
+    background:#fbfbfd; transition:border-color .15s, box-shadow .15s, background .15s;
+  }
+  .field input:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+  .btn{
+    width:100%;padding:12px;border:0;border-radius:12px;font-size:14.5px;font-weight:600;color:#fff;cursor:pointer;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    box-shadow:0 8px 18px -10px rgba(99,102,241,.95); transition:transform .12s, box-shadow .12s, opacity .12s;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 12px 22px -10px rgba(99,102,241,1)}
+  .btn:active{transform:translateY(0)}
+  .btn:disabled{opacity:.62;cursor:default;transform:none;box-shadow:none}
+  .btn.ghost{
+    background:#fff;color:var(--ink);border:1px solid #e2e5ee;box-shadow:var(--shadow-sm);font-weight:500;
+  }
+  .btn.ghost:hover{border-color:#cfd4e4;box-shadow:var(--shadow-sm);transform:none}
+  .btn.sm{width:auto;padding:8px 14px;font-size:13px;border-radius:10px}
+  .hr{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:12px;margin:20px 0}
+  .hr::before,.hr::after{content:"";flex:1;height:1px;background:var(--line)}
+  .err{
+    margin-top:14px;padding:11px 13px;border-radius:11px;font-size:13px;white-space:pre-wrap;line-height:1.55;
+    color:#b42318;background:#fef3f2;border:1px solid #fee4e2;
+  }
+  .fineprint{margin-top:16px;color:var(--faint);font-size:11.5px;line-height:1.7}
+  .fineprint code{background:#f1f3f9;padding:1px 5px;border-radius:5px;font-size:11px}
+
+  /* ---------- 仪表盘 ---------- */
+  .shell{max-width:1160px;margin:0 auto;padding:26px 22px 60px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .topbar .left{display:flex;align-items:center;gap:12px}
+  .topbar h1{font-size:19px}
+  .topbar .sub{color:var(--faint);font-size:12.5px;margin-top:2px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:4px 11px;border-radius:999px;
+    background:#eef2ff;color:#4338ca;border:1px solid #e0e7ff;
+  }
+  .pill.demo{background:#fff7ed;color:#b45309;border-color:#ffedd5}
+  .pill .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:16px}
+  .kpi{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:17px 18px;
+    box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+  }
+  .kpi::after{content:"";position:absolute;left:0;top:0;height:3px;width:100%;background:var(--accent,var(--primary));opacity:.9}
+  .kpi .k{color:var(--muted);font-size:12.5px;display:flex;align-items:center;gap:6px}
+  .kpi .v{font-size:26px;font-weight:700;letter-spacing:-.02em;margin-top:8px;font-variant-numeric:tabular-nums}
+  .kpi .v small{font-size:13px;font-weight:500;color:var(--faint);margin-left:3px}
+  .kpi .s{color:var(--faint);font-size:12px;margin-top:5px}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:18px 20px 12px;margin-bottom:16px;
+  }
+  .card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+  .card-hd h2{font-size:15px}
+  .card-hd .hint{color:var(--faint);font-size:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:860px){.grid2{grid-template-columns:1fr}}
+  .chart{width:100%;height:400px}
+  .chart.tall{height:430px}
+  .chart.xtall{height:560px}
+
+  .toolbar{display:flex;gap:8px;align-items:center}
+  .mini{
+    border:1px solid #e2e5ee;background:#fff;color:var(--muted);font-size:12px;padding:5px 10px;border-radius:9px;cursor:pointer;
+    transition:color .12s,border-color .12s,background .12s;
+  }
+  .mini:hover{color:var(--primary);border-color:#c7cdf5;background:#fafaff}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>校园网流量</h1>
-  <div class="sub">网页登录，直接在浏览器里看图表</div>
 
-  <div class="card" id="loginCard">
-    <label>学号</label>
-    <input id="stu" autocomplete="username" placeholder="你的学号">
-    <label>个人门户密码</label>
-    <input id="pwd" type="password" autocomplete="current-password" placeholder="只在本次请求里用，不会被保存">
-    <label>分布图取最近几个月（0 = 不取，取的话逐月请求会慢一点）</label>
-    <input id="dist" type="number" min="0" max="12" value="3">
-    <button id="go">登录并查看</button>
-    <button id="demo" class="ghost">先看示例数据（不用登录）</button>
+<!-- ============ 登录 ============ -->
+<div class="login" id="login">
+  <div class="login-card">
+    <div class="logo">
+      <div class="dot">⇅</div>
+      <div>
+        <b>校园网流量</b>
+        <span>登录后查看你的用量统计</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>学号</label>
+      <input id="stu" autocomplete="username" placeholder="你的学号">
+    </div>
+    <div class="field">
+      <label>个人门户密码</label>
+      <input id="pwd" type="password" autocomplete="current-password" placeholder="只在本次请求里用，不会被保存">
+    </div>
+    <div class="field">
+      <label>分布图范围（最近几个月，0 = 不取）</label>
+      <input id="dist" type="number" min="0" max="12" value="3">
+    </div>
+
+    <button class="btn" id="go">登录并查看</button>
     <div class="err" id="err" hidden></div>
-    <div class="hint">
-      需要身处校园网或学校 VPN 内。<br>
-      凭据只用于本次请求的服务端登录，用完即弃：不落盘、不记日志、不进响应。
+
+    <div class="hr">或</div>
+    <button class="btn ghost" id="demo">先看示例数据（不用登录）</button>
+
+    <div class="fineprint">
+      需要身处校园网或学校 VPN 内。凭据仅用于本次请求的服务端登录，用完即弃；不落盘、不记日志、不进响应。
+    </div>
+  </div>
+</div>
+
+<!-- ============ 仪表盘 ============ -->
+<div class="shell" id="dash" hidden>
+  <div class="topbar">
+    <div class="left">
+      <div class="logo" style="margin:0">
+        <div class="dot">⇅</div>
+      </div>
+      <div>
+        <h1>校园网流量</h1>
+        <div class="sub" id="meta">—</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <span class="pill" id="badge"><span class="d"></span><span id="badgeText">实时数据</span></span>
+      <button class="mini" id="back">切换账号</button>
     </div>
   </div>
 
-  <div id="result" hidden>
-    <div class="card demo-note" id="demoNote" hidden>这是仓库里那份编出来的示例数据，不是你的真实用量；填学号密码走登录就切成真取数。</div>
-    <div class="card">
-      <h3>按月流量趋势</h3>
-      <div class="chart" id="c1"></div>
-      <div class="dlbar">
-        <button class="mini" data-chart="c1">存 SVG</button>
-        <button class="mini" data-chart="c1" data-type="png">存 PNG</button>
+  <section class="kpis" id="kpis"></section>
+
+  <section class="card">
+    <div class="card-hd">
+      <h2>月度流量趋势</h2>
+      <div class="toolbar">
+        <span class="hint">柱：总流量 · 线：上传 / 下载 / 应缴费用</span>
+        <button class="mini" data-dl="c1" data-name="monthly">存 SVG</button>
       </div>
     </div>
-    <div class="card" id="distCard">
-      <h3>流量都花在哪了</h3>
+    <div class="chart tall" id="c1"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <div class="card-hd">
+        <h2>应用分布</h2>
+        <div class="toolbar">
+          <span class="hint" id="pieMonth"></span>
+          <button class="mini" data-dl="c2" data-name="distribution">存 SVG</button>
+        </div>
+      </div>
       <div class="chart" id="c2"></div>
-      <div class="dlbar">
-        <button class="mini" data-chart="c2">存 SVG</button>
-        <button class="mini" data-chart="c2" data-type="png">存 PNG</button>
+    </section>
+
+    <section class="card">
+      <div class="card-hd">
+        <h2>应用 Top 15</h2>
+        <div class="toolbar">
+          <button class="mini" data-dl="c3" data-name="top15">存 SVG</button>
+        </div>
       </div>
-      <div class="chart" id="c3" style="height:540px"></div>
-      <div class="dlbar">
-        <button class="mini" data-chart="c3">存 SVG</button>
-        <button class="mini" data-chart="c3" data-type="png">存 PNG</button>
-      </div>
-    </div>
+      <div class="chart" id="c3"></div>
+    </section>
   </div>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-let charts = [];
+let charts = {};
 
-function clearCharts(){ charts.forEach(c => c.dispose()); charts = []; }
+const PALETTE = ['#6366f1','#8b5cf6','#0ea5e9','#14b8a6','#f59e0b','#f43f5e','#22c55e','#a855f7','#06b6d4','#ec4899'];
+const AXIS = { line: '#e6e8f0', label: '#8a93a6', split: '#f0f2f8' };
 
-// 用 SVG 渲染：图是矢量的，放大不糊，也能直接另存成 .svg
-function newChart(el){
-  const c = echarts.init(el, null, { renderer: 'svg' });
-  charts.push(c);
+// 统一图表基础样式，三张图共用
+function baseOption(){
+  return {
+    animationDuration: 600,
+    textStyle: { fontFamily: '-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif', color: '#0f172a' },
+    tooltip: {
+      backgroundColor: 'rgba(255,255,255,.97)', borderColor: '#e6e8f0', borderWidth: 1,
+      padding: [9,12], textStyle: { color: '#0f172a', fontSize: 12.5 },
+      extraCssText: 'border-radius:11px;box-shadow:0 8px 24px -10px rgba(16,24,40,.28);'
+    }
+  };
+}
+
+function mk(id){
+  const c = echarts.init($(id), null, { renderer: 'svg' });
+  charts[id] = c;
   return c;
 }
 
+// ---------- 登录 ----------
 $('go').addEventListener('click', async () => {
   const stu_id = $('stu').value.trim();
   const password = $('pwd').value;
   const dist_months = parseInt($('dist').value || '0', 10) || 0;
-  const err = $('err');
-  err.hidden = true;
+  const err = $('err'); err.hidden = true;
 
-  if (!stu_id || !password) {
-    err.textContent = '学号和密码都要填。';
-    err.hidden = false;
-    return;
-  }
+  if (!stu_id || !password) { showErr('学号和密码都要填。'); return; }
 
-  const btn = $('go');
-  btn.disabled = true;
-  btn.textContent = '登录取数中…（分布图要逐月请求，稍等）';
+  const btn = $('go'); btn.disabled = true; btn.textContent = '登录取数中…（分布图要逐月请求，稍等）';
   try {
     const resp = await fetch('/api/data', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ stu_id, password, dist_months })
     });
     const j = await resp.json();
     if (!j.ok) throw new Error(j.error || ('HTTP ' + resp.status));
-    $('pwd').value = '';        // 用完立刻清掉，不留在页面里
-    render(j.data, false);
+    $('pwd').value = '';            // 用完立刻清掉
+    show(j.data, false);
   } catch (e) {
-    err.textContent = '出错了：' + e.message;
-    err.hidden = false;
+    showErr(e.message);
   } finally {
-    btn.disabled = false;
-    btn.textContent = '登录并查看';
+    btn.disabled = false; btn.textContent = '登录并查看';
   }
 });
 
+// ---------- 示例 ----------
 $('demo').addEventListener('click', async () => {
-  const btn = $('demo');
-  btn.disabled = true;
-  $('err').hidden = true;
+  const err = $('err'); err.hidden = true;
   try {
-    const r = await fetch('/api/demo');
-    const j = await r.json();
-    if (!j.ok) throw new Error(j.error || ('HTTP ' + r.status));
-    render(j.data, true);
-  } catch (e) {
-    $('err').textContent = '出错了：' + e.message;
-    $('err').hidden = false;
-  } finally {
-    btn.disabled = false;
-  }
+    const resp = await fetch('/api/demo');
+    const j = await resp.json();
+    if (!j.ok) throw new Error(j.error || '示例数据取不到');
+    show(j.data, true);
+  } catch (e) { showErr(e.message); }
 });
 
-function render(data, isDemo){
-  $('result').hidden = false;
-  $('demoNote').hidden = !isDemo;
-  clearCharts();
+// ---------- 切回登录 ----------
+$('back').addEventListener('click', () => {
+  $('dash').hidden = true;
+  $('login').hidden = false;
+  Object.values(charts).forEach(c => c.dispose());
+  charts = {};
+});
+
+function showErr(msg){ const e = $('err'); e.textContent = '出错了：' + msg; e.hidden = false; $('login').hidden = false; }
+
+// ---------- 渲染 ----------
+function show(data, isDemo){
+  $('login').hidden = true;
+  $('dash').hidden = false;
+  const badge = $('badge');
+  badge.className = isDemo ? 'pill demo' : 'pill';
+  $('badgeText').textContent = isDemo ? '示例数据' : '实时数据';
+
+  Object.values(charts).forEach(c => c.dispose());
+  charts = {};
 
   const m = data.monthly || [];
-  newChart($('c1')).setOption({
-    title: { text: '按月流量趋势', subtext: '柱：总流量(GB)　线：上传/下载(GB)、应缴费用(元)', left: 'center' },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    legend: { top: 62 },
-    grid: { left: 70, right: 70, top: 110, bottom: 60 },
-    xAxis: { type: 'category', data: m.map(x => x.month), axisLabel: { rotate: 45 } },
-    yAxis: [ { type: 'value', name: '流量 (GB)' }, { type: 'value', name: '费用 (元)', splitLine: { show: false } } ],
+  $('meta').textContent = m.length ? (m[0].month + ' ~ ' + m[m.length-1].month + ' · 共 ' + m.length + ' 个月') : '暂无数据';
+
+  renderKpis(m);
+  renderTrend(m);
+  renderDist(data.distribution || []);
+}
+
+function renderKpis(m){
+  const total = m.reduce((s,x) => s + (x.total_gb||0), 0);
+  const avg = m.length ? total / m.length : 0;
+  const overMonths = m.filter(x => (x.over_usage_gb||0) > 0).length;
+  const pay = m.reduce((s,x) => s + (x.should_pay_yuan||0), 0);
+  const peak = m.reduce((a,b) => (b.total_gb > (a.total_gb||-1) ? b : a), m[0] || null);
+
+  const cards = [
+    { k:'累计流量', v: total.toFixed(1), u:'GB', s: m.length ? ('近 ' + m.length + ' 个月') : '—', c:'#6366f1' },
+    { k:'月均流量', v: avg.toFixed(1), u:'GB', s: m.length ? ('共 ' + m.length + ' 个月') : '—', c:'#0ea5e9' },
+    { k:'超套餐月份', v: String(overMonths), u:'个月', s: overMonths ? '有额外扣费' : '都没超', c: overMonths ? '#f59e0b' : '#10b981' },
+    { k:'累计应缴', v: pay.toFixed(2), u:'元', s: pay > 0 ? '含超额费用' : '无超额', c: pay > 0 ? '#f43f5e' : '#10b981' },
+    { k:'峰值月份', v: peak ? peak.month : '—', u:'', s: peak ? (peak.total_gb.toFixed(1) + ' GB') : '—', c:'#8b5cf6' },
+  ];
+
+  $('kpis').innerHTML = cards.map(c => `
+    <div class="kpi" style="--accent:${c.c}">
+      <div class="k"><span style="width:8px;height:8px;border-radius:50%;background:${c.c};display:inline-block"></span>${c.k}</div>
+      <div class="v">${c.v}${c.u ? '<small>' + c.u + '</small>' : ''}</div>
+      <div class="s">${c.s}</div>
+    </div>`).join('');
+}
+
+function renderTrend(m){
+  const c = mk('c1');
+  const grad = new echarts.graphic.LinearGradient(0,0,0,1,[
+    { offset:0, color:'#818cf8' }, { offset:1, color:'#6366f1' }
+  ]);
+  c.setOption(Object.assign(baseOption(), {
+    grid: { left: 66, right: 66, top: 54, bottom: 54 },
+    legend: { top: 8, right: 8, icon: 'roundRect', itemWidth: 11, itemHeight: 11, textStyle: { color:'#64748b', fontSize:12 } },
+    tooltip: Object.assign(baseOption().tooltip, {
+      trigger: 'axis', axisPointer: { type:'shadow', shadowStyle:{ color:'rgba(99,102,241,.06)' } },
+      valueFormatter: v => (v == null ? '-' : (+v).toLocaleString('en-US', { maximumFractionDigits: 2 }))
+    }),
+    xAxis: {
+      type: 'category', data: m.map(x => x.month), axisTick: { show:false },
+      axisLine: { lineStyle: { color: AXIS.line } }, axisLabel: { color: AXIS.label, rotate: 40, fontSize: 11.5 }
+    },
+    yAxis: [
+      { type:'value', name:'GB', nameTextStyle:{ color: AXIS.label }, splitLine:{ lineStyle:{ color: AXIS.split, type:'dashed' } },
+        axisLabel:{ color: AXIS.label }, axisLine:{ show:false }, axisTick:{ show:false } },
+      { type:'value', name:'元', nameTextStyle:{ color: AXIS.label }, splitLine:{ show:false }, axisLabel:{ color: AXIS.label },
+        axisLine:{ show:false }, axisTick:{ show:false } }
+    ],
     series: [
-      { name: '总流量', type: 'bar', data: m.map(x => x.total_gb), itemStyle: { borderRadius: [4,4,0,0], color: '#5b8ff9' } },
-      { name: '上传', type: 'line', smooth: true, symbolSize: 6, data: m.map(x => x.upload_gb), itemStyle: { color: '#61ddaa' } },
-      { name: '下载', type: 'line', smooth: true, symbolSize: 6, data: m.map(x => x.download_gb), itemStyle: { color: '#f6bd16' } },
-      { name: '应缴费用', type: 'line', yAxisIndex: 1, smooth: true, symbolSize: 6, data: m.map(x => x.should_pay_yuan), itemStyle: { color: '#e8684a' } }
+      { name:'总流量', type:'bar', data:m.map(x=>x.total_gb), barMaxWidth:26,
+        itemStyle:{ borderRadius:[7,7,0,0], color: grad },
+        emphasis:{ itemStyle:{ color:'#4f46e5' } } },
+      { name:'上传', type:'line', smooth:true, symbol:'circle', symbolSize:6, showSymbol:false,
+        data:m.map(x=>x.upload_gb), lineStyle:{ width:2.5, color:'#14b8a6' }, itemStyle:{ color:'#14b8a6' } },
+      { name:'下载', type:'line', smooth:true, symbol:'circle', symbolSize:6, showSymbol:false,
+        data:m.map(x=>x.download_gb), lineStyle:{ width:2.5, color:'#f59e0b' }, itemStyle:{ color:'#f59e0b' } },
+      { name:'应缴费用', type:'line', yAxisIndex:1, smooth:true, symbol:'circle', symbolSize:6, showSymbol:false,
+        data:m.map(x=>x.should_pay_yuan), lineStyle:{ width:2, type:'dashed', color:'#f43f5e' }, itemStyle:{ color:'#f43f5e' } }
     ]
-  });
+  }));
+}
 
-  const d = data.distribution || [];
-  if (!d.length) { $('distCard').hidden = true; return; }
-  $('distCard').hidden = false;
+function renderDist(d){
+  if (!d.length) {
+    mk('c2').setOption(Object.assign(baseOption(), {
+      title:{ text:'没有分布数据', subtext:'把「分布图范围」调大再试', left:'center', top:'42%',
+              textStyle:{ color:'#94a3b8', fontSize:14, fontWeight:500 }, subtextStyle:{ color:'#cbd5e1' } }
+    }));
+    mk('c3').setOption(baseOption());
+    $('pieMonth').textContent = '';
+    return;
+  }
 
-  // 只看最近一个月
   const months = [...new Set(d.map(x => x.month))].sort();
   const last = months[months.length - 1];
   const cur = d.filter(x => x.month === last);
+  $('pieMonth').textContent = last;
 
-  // 一级分类合并（app 形如 /网络游戏/steam平台，取第一段）
   const agg = {};
-  cur.forEach(x => {
-    const top = (x.app || '').split('/').filter(Boolean)[0] || '其它';
-    agg[top] = (agg[top] || 0) + x.total_gb;
-  });
-  const pie = Object.entries(agg)
-    .map(([name, value]) => ({ name, value: +value.toFixed(2) }))
-    .sort((a, b) => b.value - a.value);
+  cur.forEach(x => { const k = (x.app||'').split('/').filter(Boolean)[0] || '其它'; agg[k] = (agg[k]||0) + x.total_gb; });
+  const pie = Object.entries(agg).map(([name, value]) => ({ name, value: +value.toFixed(2) }))
+                            .sort((a,b) => b.value - a.value);
 
-  newChart($('c2')).setOption({
-    title: { text: '应用分布 · ' + last, subtext: '按一级分类合并', left: 'center' },
-    tooltip: { trigger: 'item', formatter: '{b}: {c} GB ({d}%)' },
-    series: [{ type: 'pie', radius: ['38%','66%'], center: ['50%','58%'], data: pie, label: { formatter: '{b}\n{c} GB' } }]
-  });
+  const totalGB = pie.reduce((s,x) => s + x.value, 0);
+  mk('c2').setOption(Object.assign(baseOption(), {
+    color: PALETTE,
+    tooltip: Object.assign(baseOption().tooltip, { trigger:'item', formatter: p => `${p.name}<br/><b>${p.value} GB</b> · ${p.percent}%` }),
+    legend: { bottom: 0, icon:'circle', itemWidth:9, itemHeight:9, textStyle:{ color:'#64748b', fontSize:12 } },
+    series: [{
+      type:'pie', radius:['52%','76%'], center:['50%','46%'], avoidLabelOverlap:true,
+      itemStyle:{ borderColor:'#fff', borderWidth:3, borderRadius:6 },
+      label:{ show:false }, labelLine:{ show:false },
+      emphasis:{ scale:true, scaleSize:5, label:{ show:false } },
+      data: pie
+    }],
+    graphic: [{
+      type:'text', left:'center', top:'40%', style:{ text: totalGB.toFixed(1), fill:'#0f172a', fontSize:24, fontWeight:700, align:'center' }
+    },{
+      type:'text', left:'center', top:'49%', style:{ text:'GB 合计', fill:'#94a3b8', fontSize:12, align:'center' }
+    }]
+  }));
 
-  const top = cur.slice().sort((a, b) => b.total_gb - a.total_gb).slice(0, 15).reverse();
-  newChart($('c3')).setOption({
-    title: { text: '应用 Top15 · ' + last, left: 'center' },
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' },
-               formatter: p => p[0].name + '<br/>' + p[0].value + ' GB' },
-    grid: { left: 160, right: 50, top: 50, bottom: 30 },
-    xAxis: { type: 'value', name: 'GB' },
-    yAxis: { type: 'category', data: top.map(x => x.app) },
-    series: [{ type: 'bar', data: top.map(x => x.total_gb), itemStyle: { color: '#5b8ff9' } }]
-  });
+  const top = cur.slice().sort((a,b) => b.total_gb - a.total_gb).slice(0, 15).reverse();
+  const g2 = new echarts.graphic.LinearGradient(0,0,1,0,[
+    { offset:0, color:'#a5b4fc' }, { offset:1, color:'#6366f1' }
+  ]);
+  mk('c3').setOption(Object.assign(baseOption(), {
+    grid: { left: 8, right: 60, top: 16, bottom: 8, containLabel: true },
+    tooltip: Object.assign(baseOption().tooltip, { trigger:'axis', axisPointer:{ type:'shadow', shadowStyle:{ color:'rgba(99,102,241,.06)' } },
+      formatter: p => `${p[0].name}<br/><b>${p[0].value} GB</b>` }),
+    xAxis: { type:'value', splitLine:{ lineStyle:{ color: AXIS.split, type:'dashed' } }, axisLabel:{ color: AXIS.label }, axisLine:{ show:false }, axisTick:{ show:false } },
+    yAxis: { type:'category', data: top.map(x => x.app.replace(/^\//,'').split('/').join(' / ')),
+             axisLine:{ show:false }, axisTick:{ show:false }, axisLabel:{ color:'#475569', fontSize:11.5, width:130, overflow:'truncate' } },
+    series: [{
+      type:'bar', data: top.map(x => x.total_gb), barMaxWidth:15,
+      itemStyle:{ borderRadius:[0,6,6,0], color: g2 },
+      label:{ show:true, position:'right', formatter: p => p.value + ' GB', color:'#94a3b8', fontSize:11 }
+    }]
+  }));
 }
 
-// 把某张图存成文件。默认 SVG——矢量图，放大不糊，也能直接塞进推文/文档。
-function downloadChart(btn){
-  const el = $(btn.dataset.chart);
-  const c = charts.find(x => x.getDom() === el);
-  if (!c) return;
-  const type = btn.dataset.type || 'svg';
-  const name = (((c.getOption().title || [])[0] || {}).text || 'chart').replace(/\s+/g, '_');
-  try {
-    const url = c.getDataURL({ type, pixelRatio: 2, backgroundColor: '#fff' });
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name + '.' + type;
-    a.click();
-  } catch (err) {
-    alert('导出失败：' + err.message);
-  }
-}
-
+// ---------- 导出 ----------
 document.addEventListener('click', e => {
-  const b = e.target.closest('button.mini');
-  if (b) downloadChart(b);
+  const b = e.target.closest('[data-dl]');
+  if (!b) return;
+  const c = charts[b.dataset.dl];
+  if (!c) return;
+  const url = c.getDataURL({ type:'svg', backgroundColor:'#fff' });
+  const a = document.createElement('a');
+  a.href = url; a.download = 'netflow-' + (b.dataset.name || 'chart') + '.svg';
+  a.click();
 });
 
-window.addEventListener('resize', () => charts.forEach(c => c.resize()));
+window.addEventListener('resize', () => Object.values(charts).forEach(c => c.resize()));
 </script>
 </body>
 </html>
