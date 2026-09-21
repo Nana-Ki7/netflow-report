@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>校园网流量</title>
 <script src="/echarts.min.js"></script>
+<script src="/brands.js"></script>
 <style>
   :root{
     --bg:#f5f6fa; --card:#fff; --line:#eceef4; --ink:#0f172a; --muted:#64748b; --faint:#94a3b8;
@@ -249,6 +250,64 @@ function iconFor(name){
   return DEFAULT_ICON;
 }
 
+// 品牌图标映射：命中就用 brands.js 里的真 logo，否则回退到 emoji。
+const BRAND_RULES = [
+  [/steam/, 'steam'],
+  [/哔哩|bilibili|b站/, 'bilibili'],
+  [/微信|wechat/, 'wechat'],
+  [/youtube|油管/, 'youtube'],
+  [/netflix|奈飞/, 'netflix'],
+  [/spotify/, 'spotify'],
+  [/discord/, 'discord'],
+  [/telegram/, 'telegram'],
+  [/github/, 'github'],
+  [/chrome|谷歌/, 'googlechrome'],
+  [/twitch/, 'twitch'],
+  [/tiktok|抖音/, 'tiktok'],
+  [/epic|虚幻/, 'epicgames'],
+  [/minecraft|我的世界/, 'minecraft'],
+  [/百度/, 'baidu'],
+  [/支付宝|alipay/, 'alipay'],
+  [/淘宝|taobao/, 'taobao'],
+  [/知乎|zhihu/, 'zhihu'],
+  [/小红书/, 'xiaohongshu'],
+  [/快手/, 'kuaishou'],
+  [/网易云|netease/, 'neteasecloudmusic'],
+  [/云盘|网盘|onedrive|drive/, 'googledrive'],
+  [/zoom|会议/, 'zoom'],
+  [/苹果|apple/, 'apple'],
+  [/安卓|android/, 'android'],
+  [/火狐|firefox/, 'firefox'],
+  [/opera/, 'opera'],
+  [/维基|wikipedia/, 'wikipedia'],
+  [/reddit/, 'reddit'],
+  [/pinterest/, 'pinterest'],
+  [/soundcloud/, 'soundcloud'],
+  [/bandcamp/, 'bandcamp'],
+  [/paypal/, 'paypal'],
+  [/ebay/, 'ebay'],
+  [/mastodon|长毛象/, 'mastodon'],
+];
+const BRAND_SVG = window.BRAND_SVG || {};
+function brandOf(name){
+  const s = String(name || '').toLowerCase();
+  for (const [re, slug] of BRAND_RULES) { if (re.test(s) && BRAND_SVG[slug]) return slug; }
+  return null;
+}
+// ECharts rich text 用的图标片段
+const BRAND_RICH = {};
+for (const [slug, svg] of Object.entries(BRAND_SVG)) {
+  BRAND_RICH['b_' + slug] = {
+    backgroundColor: { image: 'data:image/svg+xml,' + encodeURIComponent(svg) },
+    width: 15, height: 15
+  };
+}
+// 统一出「图标 + 名字」：有品牌用真 logo，没有用 emoji
+function labelOf(name){
+  const slug = brandOf(name);
+  return slug ? `{b_${slug}|} ${name}` : (iconFor(name) + ' ' + name);
+}
+
 // 统一图表基础样式，三张图共用
 function baseOption(){
   return {
@@ -256,7 +315,7 @@ function baseOption(){
     textStyle: { fontFamily: '-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif', color: '#0f172a' },
     tooltip: {
       backgroundColor: 'rgba(255,255,255,.97)', borderColor: '#e6e8f0', borderWidth: 1,
-      padding: [9,12], textStyle: { color: '#0f172a', fontSize: 12.5 },
+      padding: [9,12], textStyle: { color: '#0f172a', fontSize: 12.5, rich: BRAND_RICH },
       extraCssText: 'border-radius:11px;box-shadow:0 8px 24px -10px rgba(16,24,40,.28);'
     }
   };
@@ -417,8 +476,8 @@ function renderDist(d){
   const totalGB = pie.reduce((s,x) => s + x.value, 0);
   mk('c2').setOption(Object.assign(baseOption(), {
     color: PALETTE,
-    tooltip: Object.assign(baseOption().tooltip, { trigger:'item', formatter: p => `${iconFor(p.name)} ${p.name}<br/><b>${p.value} GB</b> · ${p.percent}%` }),
-    legend: { bottom: 0, icon:'circle', itemWidth:9, itemHeight:9, textStyle:{ color:'#64748b', fontSize:12 }, formatter: name => iconFor(name) + ' ' + name },
+    tooltip: Object.assign(baseOption().tooltip, { trigger:'item', formatter: p => `${labelOf(p.name)}<br/><b>${p.value} GB</b> · ${p.percent}%` }),
+    legend: { bottom: 0, icon:'circle', itemWidth:9, itemHeight:9, textStyle:{ color:'#64748b', fontSize:12, rich: BRAND_RICH }, formatter: name => labelOf(name) },
     series: [{
       type:'pie', radius:['52%','76%'], center:['50%','46%'], avoidLabelOverlap:true,
       itemStyle:{ borderColor:'#fff', borderWidth:3, borderRadius:6 },
@@ -440,11 +499,11 @@ function renderDist(d){
   mk('c3').setOption(Object.assign(baseOption(), {
     grid: { left: 8, right: 60, top: 16, bottom: 8, containLabel: true },
     tooltip: Object.assign(baseOption().tooltip, { trigger:'axis', axisPointer:{ type:'shadow', shadowStyle:{ color:'rgba(99,102,241,.06)' } },
-      formatter: p => `${iconFor(p[0].name)} ${p[0].name}<br/><b>${p[0].value} GB</b>` }),
+      formatter: p => `${labelOf(p[0].name)}<br/><b>${p[0].value} GB</b>` }),
     xAxis: { type:'value', splitLine:{ lineStyle:{ color: AXIS.split, type:'dashed' } }, axisLabel:{ color: AXIS.label }, axisLine:{ show:false }, axisTick:{ show:false } },
     yAxis: { type:'category', data: top.map(x => x.app.replace(/^\//,'').split('/').join(' / ')),
              axisLine:{ show:false }, axisTick:{ show:false },
-             axisLabel:{ color:'#475569', fontSize:11.5, width:140, overflow:'truncate', formatter: v => iconFor(v) + ' ' + v } },
+             axisLabel:{ color:'#475569', fontSize:11.5, width:150, overflow:'truncate', formatter: v => labelOf(v), rich: BRAND_RICH } },
     series: [{
       type:'bar', data: top.map(x => x.total_gb), barMaxWidth:15,
       itemStyle:{ borderRadius:[0,6,6,0], color: g2 },
