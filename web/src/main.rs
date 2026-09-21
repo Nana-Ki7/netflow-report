@@ -41,6 +41,8 @@ const KB_PER_GB: f64 = 1024.0 * 1024.0;
 const INDEX_HTML: &str = include_str!("../static/index.html");
 /// ECharts 直接内嵌，随服务一起发 —— 页面不再依赖任何 CDN（国内访问 jsdelivr 常失败）
 const ECHARTS_JS: &[u8] = include_bytes!("../static/echarts.min.js");
+/// 品牌图标（Simple Icons，CC0）也内嵌，依旧不依赖任何外链
+const BRANDS_JS: &str = include_str!("../static/brands.js");
 
 /// 免登录的示例数据：由 cpp/data 那两份样例 CSV 生成，纯演示用。
 /// 有了它，没进校园网、手上又没凭据的人也能先把页面和图表看一遍。
@@ -51,6 +53,7 @@ async fn main() {
     let app = Router::new()
         .route("/", get(index))
         .route("/echarts.min.js", get(echarts_js))
+        .route("/brands.js", get(brands_js))
         .route("/api/data", post(api_data))
         .route("/api/demo", get(api_demo));
 
@@ -77,6 +80,17 @@ async fn echarts_js() -> impl IntoResponse {
             "application/javascript; charset=utf-8",
         )],
         ECHARTS_JS,
+    )
+}
+
+/// 把内嵌的品牌图标原样发出
+async fn brands_js() -> impl IntoResponse {
+    (
+        [(
+            axum::http::header::CONTENT_TYPE,
+            "application/javascript; charset=utf-8",
+        )],
+        BRANDS_JS,
     )
 }
 
