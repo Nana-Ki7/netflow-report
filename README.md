@@ -55,10 +55,9 @@ netflow-report/
 │       ├── echarts.min.js # ECharts 本体（内嵌，不依赖 CDN）
 │       ├── brands.js      # 品牌图标（Simple Icons，内嵌）
 │       └── demo.json      # 免登录示例数据
-├── export-rust/           # 命令行取数：登录 → 输出按月 CSV
-│   ├── Cargo.toml
-│   └── src/main.rs
-└── TUTORIAL.md            # 逐步讲解 + 练习题
+└── export-rust/           # 命令行取数：登录 → 输出按月 CSV
+    ├── Cargo.toml
+    └── src/main.rs
 ```
 
 ---
