@@ -58,35 +58,23 @@ netflow-report/
 ├── export-rust/           # 命令行取数：登录 → 输出按月 CSV
 │   ├── Cargo.toml
 │   └── src/main.rs
-├── cpp/                   # 命令行画图：读 CSV → ASCII 图 + HTML
-│   ├── main.cpp
-│   ├── CMakeLists.txt
-│   └── data/              # 两份示例 CSV
-├── glm/                   # 让 GLM 当私教的小脚本
-│   └── ask_glm.py
 └── TUTORIAL.md            # 逐步讲解 + 练习题
 ```
 
 ---
 
-## 命令行版（另一条路）
+## 只想要数据？用命令行取数
 
-不想开浏览器、只想把数据落成文件，用 `export-rust` + `cpp` 这套：Rust 管取数、C++ 管画图，中间用 CSV 隔开。
+不想开浏览器、想把原始数据落成 CSV 时，用 `export-rust`：
 
 ```bash
-# 1) 取数（需校园网/VPN）
 cd export-rust
 export HNU_STU_ID=你的学号
 export HNU_PASSWORD=你的个人门户密码
-cargo run --release -- order > ../cpp/data/netflow_monthly.csv   # 全部历史月份
-
-# 2) 画图
-cd ../cpp
-g++ -std=c++17 -O2 -Wall -o netflow-chart main.cpp
-./netflow-chart data/netflow_monthly.csv
+cargo run --release -- order > netflow_monthly.csv
 ```
 
-取数的三种模式：
+三种模式：
 
 | 模式 | 说明 |
 | --- | --- |
@@ -94,13 +82,11 @@ g++ -std=c++17 -O2 -Wall -o netflow-chart main.cpp
 | `detail <月数>` | 逐月查总量趋势（慢，无账单金额） |
 | `dist <月数>` | 按应用分类的流量分布 |
 
-C++ 那边会**按 CSV 表头**自己判断画哪种图，不用手动切。
-
 ---
 
 ## 数据格式
 
-命令行版的 CSV 就是「取数层」和「画图层」的契约：
+命令行输出的 CSV：
 
 | 列名 | 含义 | 单位 |
 | --- | --- | --- |
@@ -111,7 +97,7 @@ C++ 那边会**按 CSV 表头**自己判断画哪种图，不用手动切。
 | `over_usage_gb` | 超出套餐的流量 | GB |
 | `should_pay_yuan` | 应缴费用 | 元 |
 
-`dist` 模式（分布图）用另一张表：
+`dist` 模式（分布）用另一张表：
 
 | 列名 | 含义 | 单位 |
 | --- | --- | --- |
@@ -121,6 +107,8 @@ C++ 那边会**按 CSV 表头**自己判断画哪种图，不用手动切。
 | `download_gb` | 下载流量 | GB |
 | `upload_gb` | 上传流量 | GB |
 | `percentage` | 占当月总流量的比例 | 0~1 小数 |
+
+网页版的 `/api/data` 返回的 `monthly` / `distribution` 就是这两张表转成的 JSON。
 
 ---
 
